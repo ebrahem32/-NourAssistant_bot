@@ -1,4 +1,3 @@
-# -NourAssistant_bot
 import express from "express";
 import fetch from "node-fetch";
 import bodyParser from "body-parser";
@@ -48,6 +47,28 @@ app.post("/webhook", async (req, res) => {
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,
       {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+        }),
+      }
+    );
+
+    const result = await gRes.json();
+    const analysis =
+      result?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "لم يتمكن الذكاء من التحليل.";
+
+    console.log("📩 تحليل:", analysis);
+    return res.json({ reply: "تم استلام الرسالة ✅", analysis });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, () => console.log(`🚀 NourAssistant running on port ${PORT}`));        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
